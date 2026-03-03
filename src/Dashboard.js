@@ -6,7 +6,6 @@ import './App.css';
 function Dashboard() {
   const [activeTab, setActiveTab] = useState('Dashboard');
 
-
   const renderContent = () => {
     switch(activeTab) {
       case 'Dashboard':
