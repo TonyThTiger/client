@@ -11,7 +11,7 @@ function Home() {
 
       <header id="home-header" className="App-header" >
         <h1 className="App-title">Parakeet</h1>
-        <p className="App-tagline">A Conversation Based Language Learning Companion</p>
+        <p className="App-tagline">A Conversation Based Language Learning Tool</p>
         <nav className="App-nav">
           <Link to="/dashboard"><button id="start-button" className="nav-button">Start Learning</button></Link>
         </nav>

@@ -143,7 +143,7 @@
 }
 
 .chatbox::-webkit-scrollbar-thumb:hover {
-  background: #1aa00d;
+  background: #608897;
 }
 
 #user-message {
@@ -170,6 +170,9 @@
   margin-top: 20px;
   align-items: center;
   justify-content: center;
+}
+.microphone-button:hover {
+  background-color: #608897;
 }
 
 #microphone-icon {
@@ -216,7 +219,7 @@
 }
 
 .add-word-button {
-  background: #22d915;
+  background: #ffffff;
   color: black;
   border: none;
   padding: 8px 12px;
@@ -225,12 +228,12 @@
 }
 
 .add-word-button:hover {
-  background: #1aa00d;
+  background: #608897;
 }
 
 .sort-button {
-  background: #06195d;
-  color: #d3f2ff;
+  background: white;
+  color: #043a8b;
   border: none;
   padding: 6px 10px;
   border-radius: 6px;
@@ -239,7 +242,7 @@
 }
 
 .sort-button:hover {
-  background: #043a8b;
+  background: #608897;
 }
 
 .settings-content {
