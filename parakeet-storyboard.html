@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Parakeet — Interactive Storyboard</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      min-height: 100%;
+      background: #1a1a22;
+      color: #fff;
+      font-family: Georgia, 'Times New Roman', serif;
+    }
+
+    body { padding: 32px 24px 60px; }
+
+    /* ── Header ─────────────────────────────────── */
+    .sb-header { text-align: center; margin-bottom: 40px; }
+    .sb-header .eyebrow {
+      font-size: 11px; letter-spacing: 4px; color: #608897;
+      text-transform: uppercase; margin-bottom: 8px; font-family: sans-serif;
+    }
+    .sb-header h1 { font-size: 36px; font-weight: normal; color: #d3f2ff; }
+    .sb-header p  { font-size: 13px; color: #888; margin-top: 8px; font-family: sans-serif; }
+
+    /* ── Cards row ──────────────────────────────── */
+    #cards-row {
+      display: flex; gap: 20px; justify-content: center;
+      flex-wrap: wrap; margin-bottom: 32px;
+    }
+
+    .screen-card {
+      width: 180px; cursor: pointer; border-radius: 14px;
+      border: 2px solid #333; background: #1e1e28;
+      transition: transform .2s, border-color .2s, box-shadow .2s;
+      overflow: hidden;
+    }
+    .screen-card:hover { transform: translateY(-3px); border-color: #608897; box-shadow: 0 6px 20px rgba(96,136,151,.3); }
+    .screen-card.active { transform: translateY(-6px); }
+
+    .card-header {
+      padding: 8px 12px; display: flex; align-items: center; gap: 6px;
+    }
+    .card-header .icon { font-size: 16px; }
+    .card-header .card-title { font-size: 11px; font-weight: bold; color: #fff; font-family: sans-serif; }
+    .card-header .card-sub  { font-size: 8px; color: rgba(255,255,255,.7); font-family: sans-serif; }
+
+    .card-mockup { height: 160px; padding: 8px; background: #252530; }
+    .card-cue {
+      padding: 6px 12px; font-size: 8px; color: #666;
+      text-align: center; font-style: italic; font-family: sans-serif;
+      transition: color .2s;
+    }
+    .screen-card.active .card-cue { color: #608897; }
+
+    /* ── Mockups ────────────────────────────────── */
+    .mockup {
+      border-radius: 12px; overflow: hidden; height: 100%;
+      display: flex; flex-direction: column; font-family: sans-serif;
+      background: #3d3d45;
+    }
+    .m-topbar {
+      background: #06195d; padding: 8px 12px;
+      font-size: 11px; color: #d3f2ff; font-weight: bold; flex-shrink: 0;
+    }
+    .m-body { flex: 1; display: flex; overflow: hidden; }
+
+    /* home mockup */
+    .m-home-body {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 8px; padding: 16px;
+    }
+    .m-home-title { font-size: 22px; font-weight: bold; color: #fff; }
+    .m-home-tag   { font-size: 9px; color: #aaa; text-align: center; }
+    .m-home-btn {
+      margin-top: 8px; background: #fff; color: #282c34;
+      border: none; border-radius: 6px; padding: 8px 20px;
+      font-size: 10px; font-weight: bold; cursor: pointer;
+    }
+
+    /* sidebar */
+    .m-sidebar {
+      width: 70px; background: #2a2a2f; padding: 10px 6px;
+      display: flex; flex-direction: column; gap: 4px; flex-shrink: 0;
+    }
+    .m-sidebar-item {
+      border-radius: 4px; padding: 5px 4px; font-size: 7px;
+      text-align: center; color: #fff; background: #4a4a52;
+    }
+    .m-sidebar-item.active { background: #608897; color: #000; font-weight: bold; }
+
+    /* dashboard content */
+    .m-dash-content {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 6px; padding: 12px;
+    }
+    .m-dash-title { font-size: 13px; font-weight: bold; color: #fff; }
+    .m-dash-sub   { font-size: 8px; color: #aaa; text-align: center; }
+    .m-dash-stats {
+      background: #2a2a2f; border-radius: 8px; padding: 8px;
+      width: 90%; font-size: 7px; color: #ccc; text-align: center; line-height: 1.8;
+    }
+
+    /* conversation */
+    .m-convo-content {
+      flex: 1; display: flex; flex-direction: column; padding: 10px; gap: 6px;
+    }
+    .m-convo-title { font-size: 11px; font-weight: bold; color: #fff; }
+    .m-chat-box {
+      background: #2a2a2f; border-radius: 8px; flex: 1; padding: 8px;
+      display: flex; flex-direction: column; gap: 3px; overflow: hidden;
+    }
+    .m-chat-bubble {
+      font-size: 7px; border-radius: 4px; padding: 3px 6px; max-width: 80%;
+    }
+    .m-chat-bubble.resp { background: #3a4a55; color: #d3f2ff; align-self: flex-start; }
+    .m-chat-bubble.user { background: #4a4a52; color: #ddd; align-self: flex-end; }
+    .m-chat-input {
+      background: #3d3d45; border: 1px solid #444; border-radius: 4px;
+      padding: 4px 8px; font-size: 7px; color: #888;
+    }
+
+    /* vocabulary */
+    .m-vocab-content {
+      flex: 1; display: flex; flex-direction: column; padding: 10px; gap: 5px; overflow: hidden;
+    }
+    .m-vocab-title { font-size: 11px; font-weight: bold; color: #fff; }
+    .m-sort-btn {
+      background: #fff; color: #043a8b; border: none; border-radius: 4px;
+      padding: 3px 7px; font-size: 7px; align-self: flex-start; cursor: pointer;
+    }
+    .m-word { background: #3d3d45; border: 1px solid #444; border-radius: 4px; padding: 3px 8px; font-size: 8px; color: #fff; }
+    .m-add-row { display: flex; gap: 4px; margin-top: auto; }
+    .m-add-input {
+      flex: 1; background: #2a2a2f; border: 1px solid #444; border-radius: 4px;
+      padding: 3px 6px; font-size: 7px; color: #888;
+    }
+    .m-add-btn {
+      background: #fff; color: #000; border: none; border-radius: 4px;
+      padding: 3px 7px; font-size: 7px; cursor: pointer;
+    }
+
+    /* settings */
+    .m-settings-content {
+      flex: 1; display: flex; flex-direction: column; padding: 12px; gap: 8px;
+    }
+    .m-settings-title { font-size: 11px; font-weight: bold; color: #fff; }
+    .m-setting-group  { display: flex; flex-direction: column; gap: 2px; }
+    .m-setting-label  { font-size: 7px; color: #bbb; font-weight: bold; }
+    .m-setting-field  {
+      background: #2a2a2f; border: 1px solid #444; border-radius: 4px;
+      padding: 4px 8px; font-size: 7px; color: #fff;
+    }
+    .m-setting-field.placeholder { color: #666; }
+
+    /* ── Flow pills ─────────────────────────────── */
+    #flow-row {
+      display: flex; justify-content: center; gap: 8px;
+      flex-wrap: wrap; margin-bottom: 32px;
+    }
+    .flow-pill {
+      display: flex; align-items: center; gap: 6px;
+      background: #252530; border: 1px solid #333; border-radius: 20px;
+      padding: 5px 12px; cursor: pointer; font-size: 10px;
+      font-family: sans-serif; transition: background .15s, border-color .15s;
+    }
+    .flow-pill:hover { background: #2e2e3a; border-color: #555; }
+    .flow-pill .sep { color: #555; }
+
+    /* ── Detail panel ───────────────────────────── */
+    #detail-panel {
+      max-width: 860px; margin: 0 auto;
+      background: #252530; border-radius: 16px; padding: 32px;
+      display: none;
+      animation: fadeIn .2s ease;
+    }
+    #detail-panel.visible { display: block; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .detail-top {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      flex-wrap: wrap; gap: 16px; margin-bottom: 24px;
+    }
+    .detail-eyebrow {
+      font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+      margin-bottom: 6px; font-family: sans-serif;
+    }
+    .detail-title { font-size: 24px; font-weight: normal; }
+    .detail-close {
+      background: transparent; border: 1px solid #444; color: #888;
+      border-radius: 6px; padding: 6px 14px; cursor: pointer;
+      font-size: 11px; font-family: sans-serif;
+    }
+    .detail-desc {
+      font-size: 14px; color: #bbb; line-height: 1.7; margin-bottom: 24px;
+      font-family: sans-serif;
+    }
+    .detail-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 28px;
+    }
+    @media (max-width: 600px) { .detail-grid { grid-template-columns: 1fr; } }
+
+    .section-label {
+      font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+      margin-bottom: 12px; font-family: sans-serif;
+    }
+    .use-case-list { display: flex; flex-direction: column; gap: 8px; }
+    .use-case-item {
+      display: flex; gap: 10px; align-items: flex-start;
+      font-size: 12px; color: #ccc; line-height: 1.5; font-family: sans-serif;
+    }
+    .uc-diamond { flex-shrink: 0; margin-top: 2px; }
+
+    .flow-btn-list { display: flex; flex-direction: column; gap: 8px; }
+    .flow-btn {
+      border-radius: 8px; padding: 8px 14px; cursor: pointer;
+      font-size: 11px; display: flex; align-items: center; gap: 8px;
+      text-align: left; transition: opacity .15s; font-family: sans-serif;
+    }
+    .flow-btn.primary { background: #fff; color: #06195d; border: none; }
+    .flow-btn.nav     { background: #608897; color: #fff; border: none; }
+    .flow-btn.back    { background: transparent; color: #aaa; border: 1px solid #555; }
+
+    .preview-wrap {
+      height: 240px; max-width: 440px; margin: 0 auto;
+      border-radius: 12px; overflow: hidden; border: 1px solid #333;
+    }
+    .preview-wrap .mockup { border-radius: 0; }
+
+    /* ── Footer ─────────────────────────────────── */
+    .sb-footer {
+      text-align: center; margin-top: 40px;
+      font-size: 10px; color: #444; font-family: sans-serif;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="sb-header">
+    <div class="eyebrow">Interactive Storyboard</div>
+    <h1>🦜 Parakeet</h1>
+    <p>Click any screen to explore its use cases and user flows</p>
+  </div>
+
+  <!-- Cards -->
+  <div id="cards-row">
+
+    <!-- HOME -->
+    <div class="screen-card" id="card-home" onclick="toggleCard('home')" style="--accent:#608897">
+      <div class="card-header" style="background:#608897">
+        <span class="icon">🏠</span>
+        <div>
+          <div class="card-title">Home Page</div>
+          <div class="card-sub">Landing / Entry Point</div>
+        </div>
+      </div>
+      <div class="card-mockup">
+        <div class="mockup">
+          <div class="m-topbar">Parakeet</div>
+          <div class="m-home-body">
+            <div class="m-home-title">🦜 Parakeet</div>
+            <div class="m-home-tag">A Conversation Based Language Learning Tool</div>
+            <button class="m-home-btn">Start Learning</button>
+          </div>
+        </div>
+      </div>
+      <div class="card-cue">▼ expand details</div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div class="screen-card" id="card-dashboard" onclick="toggleCard('dashboard')">
+      <div class="card-header" style="background:#4a7c8a">
+        <span class="icon">📊</span>
+        <div>
+          <div class="card-title">Dashboard Overview</div>
+          <div class="card-sub">Home Base / Stats Hub</div>
+        </div>
+      </div>
+      <div class="card-mockup">
+        <div class="mockup">
+          <div class="m-topbar">Parakeet</div>
+          <div class="m-body">
+            <div class="m-sidebar">
+              <div class="m-sidebar-item active">Dashboard</div>
+              <div class="m-sidebar-item">Conversation</div>
+              <div class="m-sidebar-item">Vocabulary</div>
+              <div class="m-sidebar-item">Settings</div>
+            </div>
+            <div class="m-dash-content">
+              <div class="m-dash-title">Dashboard</div>
+              <div class="m-dash-sub">Welcome to your learning dashboard.</div>
+              <div class="m-dash-stats">✅ 12 vocabulary words learned<br>✅ 3 conversation modules completed</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card-cue">▼ expand details</div>
+    </div>
+
+    <!-- CONVERSATION -->
+    <div class="screen-card" id="card-conversation" onclick="toggleCard('conversation')">
+      <div class="card-header" style="background:#3d7a6e">
+        <span class="icon">💬</span>
+        <div>
+          <div class="card-title">Conversation Module</div>
+          <div class="card-sub">Practice Speaking &amp; Reading</div>
+        </div>
+      </div>
+      <div class="card-mockup">
+        <div class="mockup">
+          <div class="m-topbar">Parakeet</div>
+          <div class="m-body">
+            <div class="m-sidebar">
+              <div class="m-sidebar-item">Dashboard</div>
+              <div class="m-sidebar-item active">Conversation</div>
+              <div class="m-sidebar-item">Vocabulary</div>
+              <div class="m-sidebar-item">Settings</div>
+            </div>
+            <div class="m-convo-content">
+              <div class="m-convo-title">Conversation</div>
+              <div class="m-chat-box">
+                <div class="m-chat-bubble resp">Hola, ¿cómo estás?</div>
+                <div class="m-chat-bubble user">Hola, estoy bien. ¿Cómo estás tú?</div>
+                <div class="m-chat-bubble resp">Bien, gracias. ¿Cuál es el total?</div>
+                <div class="m-chat-bubble user">Son $75, por favor.</div>
+                <div class="m-chat-bubble resp">¿Aceptan tarjeta de crédito?</div>
+              </div>
+              <div class="m-chat-input">Type your message here...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card-cue">▼ expand details</div>
+    </div>
+
+    <!-- VOCABULARY -->
+    <div class="screen-card" id="card-vocabulary" onclick="toggleCard('vocabulary')">
+      <div class="card-header" style="background:#5a6e9a">
+        <span class="icon">📖</span>
+        <div>
+          <div class="card-title">Vocabulary List</div>
+          <div class="card-sub">Word Bank Management</div>
+        </div>
+      </div>
+      <div class="card-mockup">
+        <div class="mockup">
+          <div class="m-topbar">Parakeet</div>
+          <div class="m-body">
+            <div class="m-sidebar">
+              <div class="m-sidebar-item">Dashboard</div>
+              <div class="m-sidebar-item">Conversation</div>
+              <div class="m-sidebar-item active">Vocabulary</div>
+              <div class="m-sidebar-item">Settings</div>
+            </div>
+            <div class="m-vocab-content">
+              <div class="m-vocab-title">Vocabulary</div>
+              <button class="m-sort-btn">Sort A–Z</button>
+              <div class="m-word">hola</div>
+              <div class="m-word">gracias</div>
+              <div class="m-word">por favor</div>
+              <div class="m-word">adiós</div>
+              <div class="m-add-row">
+                <div class="m-add-input">Add a vocabulary word…</div>
+                <div class="m-add-btn">Add</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card-cue">▼ expand details</div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="screen-card" id="card-settings" onclick="toggleCard('settings')">
+      <div class="card-header" style="background:#7a5e8a">
+        <span class="icon">⚙️</span>
+        <div>
+          <div class="card-title">Settings Panel</div>
+          <div class="card-sub">Personalization &amp; Config</div>
+        </div>
+      </div>
+      <div class="card-mockup">
+        <div class="mockup">
+          <div class="m-topbar">Parakeet</div>
+          <div class="m-body">
+            <div class="m-sidebar">
+              <div class="m-sidebar-item">Dashboard</div>
+              <div class="m-sidebar-item">Conversation</div>
+              <div class="m-sidebar-item">Vocabulary</div>
+              <div class="m-sidebar-item active">Settings</div>
+            </div>
+            <div class="m-settings-content">
+              <div class="m-settings-title">Settings</div>
+              <div class="m-setting-group">
+                <div class="m-setting-label">Difficulty</div>
+                <div class="m-setting-field">Standard ▾</div>
+              </div>
+              <div class="m-setting-group">
+                <div class="m-setting-label">Custom Prompt</div>
+                <div class="m-setting-field placeholder">Enter a custom prompt...</div>
+              </div>
+              <div class="m-setting-group">
+                <div class="m-setting-label">Language</div>
+                <div class="m-setting-field">Spanish ▾</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card-cue">▼ expand details</div>
+    </div>
+
+  </div><!-- /cards-row -->
+
+  <!-- Flow pills -->
+  <div id="flow-row">
+    <div class="flow-pill" onclick="toggleCard('dashboard')" onmouseenter="highlightCard('dashboard')" onmouseleave="unhighlightCard('dashboard')">
+      <span style="color:#608897">🏠 Home</span><span class="sep">→</span><span style="color:#4a7c8a">📊 Dashboard</span>
+    </div>
+    <div class="flow-pill" onclick="toggleCard('conversation')" onmouseenter="highlightCard('conversation')" onmouseleave="unhighlightCard('conversation')">
+      <span style="color:#4a7c8a">📊 Dashboard</span><span class="sep">→</span><span style="color:#3d7a6e">💬 Conversation</span>
+    </div>
+    <div class="flow-pill" onclick="toggleCard('vocabulary')" onmouseenter="highlightCard('vocabulary')" onmouseleave="unhighlightCard('vocabulary')">
+      <span style="color:#4a7c8a">📊 Dashboard</span><span class="sep">→</span><span style="color:#5a6e9a">📖 Vocabulary</span>
+    </div>
+    <div class="flow-pill" onclick="toggleCard('settings')" onmouseenter="highlightCard('settings')" onmouseleave="unhighlightCard('settings')">
+      <span style="color:#4a7c8a">📊 Dashboard</span><span class="sep">→</span><span style="color:#7a5e8a">⚙️ Settings</span>
+    </div>
+    <div class="flow-pill" onclick="toggleCard('vocabulary')" onmouseenter="highlightCard('vocabulary')" onmouseleave="unhighlightCard('vocabulary')">
+      <span style="color:#3d7a6e">💬 Conversation</span><span class="sep">→</span><span style="color:#5a6e9a">📖 Vocabulary</span>
+    </div>
+    <div class="flow-pill" onclick="toggleCard('settings')" onmouseenter="highlightCard('settings')" onmouseleave="unhighlightCard('settings')">
+      <span style="color:#5a6e9a">📖 Vocabulary</span><span class="sep">→</span><span style="color:#7a5e8a">⚙️ Settings</span>
+    </div>
+  </div>
+
+  <!-- Detail panel (populated by JS) -->
+  <div id="detail-panel"></div>
+
+  <div class="sb-footer">Parakeet · App Storyboard · 5 screens · Click any card or flow to explore</div>
+
+  <script>
+    const screens = {
+      home: {
+        color: '#608897',
+        icon: '🏠',
+        title: 'Home Page',
+        subtitle: 'Landing / Entry Point',
+        description: 'The first screen users see. Introduces Parakeet with a tagline and a single CTA to begin learning.',
+        useCases: [
+          'User lands on the app for the first time',
+          "User returns and wants to jump back in",
+          "Brand recognition via 'Parakeet' header",
+        ],
+        flows: [
+          { label: 'Start Learning →', target: 'dashboard', type: 'primary' },
+        ],
+        previewId: 'prev-home',
+      },
+      dashboard: {
+        color: '#4a7c8a',
+        icon: '📊',
+        title: 'Dashboard Overview',
+        subtitle: 'Home Base / Stats Hub',
+        description: 'Post-login hub. Shows progress stats and acts as a launchpad to all modules. Sidebar navigation is always visible.',
+        useCases: [
+          'User sees their monthly progress summary',
+          'User navigates to any module via sidebar',
+          'User collapses the sidebar for more space',
+        ],
+        flows: [
+          { label: '→ Conversation', target: 'conversation', type: 'nav' },
+          { label: '→ Vocabulary',   target: 'vocabulary',   type: 'nav' },
+          { label: '→ Settings',     target: 'settings',     type: 'nav' },
+        ],
+        previewId: 'prev-dashboard',
+      },
+      conversation: {
+        color: '#3d7a6e',
+        icon: '💬',
+        title: 'Conversation Module',
+        subtitle: 'Practice Speaking & Reading',
+        description: 'An interactive chat interface showing bilingual conversation practice. Supports typing and microphone input.',
+        useCases: [
+          'User practices a scripted shopping scenario in Spanish',
+          'User types a response and submits via Enter',
+          'User taps the microphone button to speak',
+          'User reviews the full dialogue history by scrolling',
+        ],
+        flows: [
+          { label: '← Dashboard', target: 'dashboard', type: 'back' },
+          { label: '→ Vocabulary', target: 'vocabulary', type: 'nav' },
+        ],
+        previewId: 'prev-conversation',
+      },
+      vocabulary: {
+        color: '#5a6e9a',
+        icon: '📖',
+        title: 'Vocabulary List',
+        subtitle: 'Word Bank Management',
+        description: 'A scrollable list of learned vocabulary. Users can sort A–Z, add new words, and review their growing bank.',
+        useCases: [
+          "User reviews all words they've learned",
+          'User sorts the list alphabetically',
+          'User adds a new word via the input field',
+          'User presses Enter to quickly add a word',
+        ],
+        flows: [
+          { label: '← Dashboard', target: 'dashboard', type: 'back' },
+          { label: '→ Settings',  target: 'settings',  type: 'nav' },
+        ],
+        previewId: 'prev-vocabulary',
+      },
+      settings: {
+        color: '#7a5e8a',
+        icon: '⚙️',
+        title: 'Settings Panel',
+        subtitle: 'Personalization & Config',
+        description: 'Lets users customize their learning experience: difficulty level, custom prompts, and target language.',
+        useCases: [
+          'User switches from Standard to Difficult mode',
+          'User adds a custom conversation prompt',
+          'User selects a different target language',
+        ],
+        flows: [
+          { label: '← Dashboard', target: 'dashboard', type: 'back' },
+        ],
+        previewId: 'prev-settings',
+      },
+    };
+
+    // Clone the small card mockups for the larger preview
+    const previewMockupHTML = {
+      home: `
+        <div class="mockup">
+          <div class="m-topbar">Parakeet</div>
+          <div class="m-home-body">
+            <div class="m-home-title">🦜 Parakeet</div>
+            <div class="m-home-tag">A Conversation Based Language Learning Tool</div>
+            <button class="m-home-btn">Start Learning</button>
+          </div>
+        </div>`,
+      dashboard: `
+        <div class="mockup">
+          <div class="m-topbar">Parakeet</div>
+          <div class="m-body">
+            <div class="m-sidebar">
+              <div class="m-sidebar-item active">Dashboard</div>
+              <div class="m-sidebar-item">Conversation</div>
+              <div class="m-sidebar-item">Vocabulary</div>
+              <div class="m-sidebar-item">Settings</div>
+            </div>
+            <div class="m-dash-content">
+              <div class="m-dash-title">Dashboard</div>
+              <div class="m-dash-sub">Welcome to your learning dashboard.</div>
+              <div class="m-dash-stats">✅ 12 vocabulary words learned<br>✅ 3 conversation modules completed</div>
+            </div>
+          </div>
+        </div>`,
+      conversation: `
+        <div class="mockup">
+          <div class="m-topbar">Parakeet</div>
+          <div class="m-body">
+            <div class="m-sidebar">
+              <div class="m-sidebar-item">Dashboard</div>
+              <div class="m-sidebar-item active">Conversation</div>
+              <div class="m-sidebar-item">Vocabulary</div>
+              <div class="m-sidebar-item">Settings</div>
+            </div>
+            <div class="m-convo-content">
+              <div class="m-convo-title">Conversation</div>
+              <div class="m-chat-box">
+                <div class="m-chat-bubble resp">Hola, ¿cómo estás?</div>
+                <div class="m-chat-bubble user">Hola, estoy bien. ¿Cómo estás tú?</div>
+                <div class="m-chat-bubble resp">Bien, gracias. ¿Cuál es el total?</div>
+                <div class="m-chat-bubble user">Son $75, por favor.</div>
+                <div class="m-chat-bubble resp">¿Aceptan tarjeta de crédito?</div>
+              </div>
+              <div class="m-chat-input">Type your message here...</div>
+            </div>
+          </div>
+        </div>`,
+      vocabulary: `
+        <div class="mockup">
+          <div class="m-topbar">Parakeet</div>
+          <div class="m-body">
+            <div class="m-sidebar">
+              <div class="m-sidebar-item">Dashboard</div>
+              <div class="m-sidebar-item">Conversation</div>
+              <div class="m-sidebar-item active">Vocabulary</div>
+              <div class="m-sidebar-item">Settings</div>
+            </div>
+            <div class="m-vocab-content">
+              <div class="m-vocab-title">Vocabulary</div>
+              <button class="m-sort-btn">Sort A–Z</button>
+              <div class="m-word">hola</div>
+              <div class="m-word">gracias</div>
+              <div class="m-word">por favor</div>
+              <div class="m-word">adiós</div>
+              <div class="m-word">buenos días</div>
+              <div class="m-add-row">
+                <div class="m-add-input">Add a vocabulary word…</div>
+                <div class="m-add-btn">Add</div>
+              </div>
+            </div>
+          </div>
+        </div>`,
+      settings: `
+        <div class="mockup">
+          <div class="m-topbar">Parakeet</div>
+          <div class="m-body">
+            <div class="m-sidebar">
+              <div class="m-sidebar-item">Dashboard</div>
+              <div class="m-sidebar-item">Conversation</div>
+              <div class="m-sidebar-item">Vocabulary</div>
+              <div class="m-sidebar-item active">Settings</div>
+            </div>
+            <div class="m-settings-content">
+              <div class="m-settings-title">Settings</div>
+              <div class="m-setting-group">
+                <div class="m-setting-label">Difficulty</div>
+                <div class="m-setting-field">Standard ▾</div>
+              </div>
+              <div class="m-setting-group">
+                <div class="m-setting-label">Custom Prompt</div>
+                <div class="m-setting-field placeholder">Enter a custom prompt...</div>
+              </div>
+              <div class="m-setting-group">
+                <div class="m-setting-label">Language</div>
+                <div class="m-setting-field">Spanish ▾</div>
+              </div>
+            </div>
+          </div>
+        </div>`,
+    };
+
+    let activeScreen = null;
+
+    function getTargetIcons() {
+      return { home:'🏠', dashboard:'📊', conversation:'💬', vocabulary:'📖', settings:'⚙️' };
+    }
+
+    function renderPanel(id) {
+      const s = screens[id];
+      const icons = getTargetIcons();
+      const useCasesHTML = s.useCases.map(uc =>
+        `<div class="use-case-item"><span class="uc-diamond" style="color:${s.color}">◆</span>${uc}</div>`
+      ).join('');
+      const flowsHTML = s.flows.map(f =>
+        `<button class="flow-btn ${f.type}" onclick="toggleCard('${f.target}')">${icons[f.target]} ${f.label}</button>`
+      ).join('');
+
+      document.getElementById('detail-panel').innerHTML = `
+        <div class="detail-top">
+          <div>
+            <div class="detail-eyebrow" style="color:${s.color}">${s.subtitle}</div>
+            <div class="detail-title">${s.icon} ${s.title}</div>
+          </div>
+          <button class="detail-close" onclick="closePanel()">✕ close</button>
+        </div>
+        <p class="detail-desc">${s.description}</p>
+        <div class="detail-grid">
+          <div>
+            <div class="section-label" style="color:${s.color}">Use Cases</div>
+            <div class="use-case-list">${useCasesHTML}</div>
+          </div>
+          <div>
+            <div class="section-label" style="color:${s.color}">User Flows</div>
+            <div class="flow-btn-list">${flowsHTML}</div>
+          </div>
+        </div>
+        <div class="section-label" style="color:${s.color}">Screen Preview</div>
+        <div class="preview-wrap">${previewMockupHTML[id]}</div>
+      `;
+      document.getElementById('detail-panel').style.borderColor = s.color + '55';
+      document.getElementById('detail-panel').style.boxShadow = `0 0 40px ${s.color}22`;
+    }
+
+    function toggleCard(id) {
+      const panel = document.getElementById('detail-panel');
+
+      // If clicking same card, close
+      if (activeScreen === id) {
+        closePanel();
+        return;
+      }
+
+      // Deactivate old card
+      if (activeScreen) {
+        const oldCard = document.getElementById('card-' + activeScreen);
+        if (oldCard) {
+          oldCard.classList.remove('active');
+          oldCard.querySelector('.card-cue').textContent = '▼ expand details';
+        }
+      }
+
+      activeScreen = id;
+      const card = document.getElementById('card-' + id);
+      card.classList.add('active');
+      card.querySelector('.card-cue').textContent = '▲ collapse';
+
+      // Update border/shadow of active card
+      const color = screens[id].color;
+      card.style.borderColor = color;
+      card.style.boxShadow = `0 12px 32px ${color}44`;
+
+      renderPanel(id);
+      panel.classList.add('visible');
+      // Re-trigger animation
+      panel.style.animation = 'none';
+      panel.offsetHeight;
+      panel.style.animation = '';
+
+      setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+    }
+
+    function closePanel() {
+      if (activeScreen) {
+        const card = document.getElementById('card-' + activeScreen);
+        if (card) {
+          card.classList.remove('active');
+          card.style.borderColor = '';
+          card.style.boxShadow = '';
+          card.querySelector('.card-cue').textContent = '▼ expand details';
+        }
+      }
+      activeScreen = null;
+      document.getElementById('detail-panel').classList.remove('visible');
+    }
+
+    function highlightCard(id) {
+      if (activeScreen === id) return;
+      const card = document.getElementById('card-' + id);
+      if (card) { card.style.borderColor = '#608897'; }
+    }
+
+    function unhighlightCard(id) {
+      if (activeScreen === id) return;
+      const card = document.getElementById('card-' + id);
+      if (card) { card.style.borderColor = ''; }
+    }
+  </script>
+</body>
+</html>
