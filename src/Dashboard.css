@@ -1,6 +1,6 @@
 #dashboard-sidebar {
   width: 250px;
-  background-color: #2a2a2f;
+  background-color: #3a2f1b;
   padding: 20px;
   display: flex;
   flex-direction: column;
@@ -65,7 +65,7 @@
 }
 
 #dashboard-sidebar #sidebar-toggle:focus {
-  outline: 2px solid #608897;
+  outline: 2px solid #849f00;
 }
 
 .sidebar-option:hover {
@@ -73,13 +73,13 @@
 }
 
 .sidebar-option.active {
-  background-color: #608897;
+  background-color: #849f00;
   color: black;
   font-weight: bold;
 }
 
 #dashboard-header {
-  background-color: #3d3d45;
+  background-color: #faffe5;
   min-height: calc(100vh - 6vh);
   margin-left: 250px;
   display: flex;
@@ -87,7 +87,7 @@
   align-items: center;
   justify-content: center;
   font-size: calc(10px + 2vmin);
-  color: white;
+  color: black;
 }
 
 .dashboard-content {
@@ -97,10 +97,10 @@
 }
 
 #conversation-container {
-  background-color: #2a2a2f;
+  background-color: #414146;
   padding: 20px;
   border-radius: 30px;
-  border-color: #06195d;
+  border-color: #145514;
   width: 100%;
   max-width: calc(100vw - 300px);
   height: 40vh;
@@ -108,6 +108,7 @@
   display: flex;
   flex-direction: column;
   font-size: 80%;
+  color:white;
 }
 
 .chatbox {
@@ -143,7 +144,7 @@
 }
 
 .chatbox::-webkit-scrollbar-thumb:hover {
-  background: #608897;
+  background: #849f00;
 }
 
 #user-message {
@@ -164,7 +165,7 @@
   background-color: #ffffff;
   width: 6vh;
   height: 6vh;
-  border: none;
+  border: 1px solid #444;
   cursor: pointer;
   display: flex;
   margin-top: 20px;
@@ -172,12 +173,12 @@
   justify-content: center;
 }
 .microphone-button:hover {
-  background-color: #608897;
+  background-color: #849f00;
 }
 
 #microphone-icon {
   height: 60%;
-  fill: #06195d;
+  fill: #145514;
 }
 
 /* Vocabulary list styles */
@@ -193,7 +194,7 @@
 }
 
 .vocab-item {
-  background: #3d3d45;
+  background: #414146;
   border: 1px solid #444;
   padding: 8px 12px;
   border-radius: 6px;
@@ -228,7 +229,7 @@
 }
 
 .add-word-button:hover {
-  background: #608897;
+  background: #849f00;
 }
 
 .sort-button {
@@ -239,10 +240,12 @@
   border-radius: 6px;
   cursor: pointer;
   margin-top: 8px;
+  width: 10%;
+  border: 1px solid #444;
 }
 
 .sort-button:hover {
-  background: #608897;
+  background: #849f00;
 }
 
 .settings-content {
